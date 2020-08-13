@@ -1,0 +1,2272 @@
+{
+    "Resources": {
+      "WageSlotType": {
+        "Type": "Custom::LexSlotType",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAWageSlotType-${AWS::StackName}"},
+          "createVersion": true,
+          "description": "QNA Wage Slot Type - 4.1.0 - v1",
+          "parentSlotTypeSignature": "AMAZON.AlphaNumeric",
+          "slotTypeConfigurations": [
+            {"regexConfiguration": {"pattern": "[0-9]{1,7}"}}
+          ]
+        }
+      },
+      "QNAWage": {
+        "Type": "Custom::LexBot",
+        "DependsOn": "WageIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAWageBot-${AWS::StackName}"},
+          "locale": "en-US",
+          "voiceId": "Joanna",
+          "childDirected": false,
+          "createVersion": true,
+          "intents": [{"intentName": {"Ref": "WageIntent"}}],
+          "clarificationPrompt": {
+            "messages": [
+              {"contentType": "PlainText", "content": "Please repeat your wage."}
+            ],
+            "maxAttempts": 3
+          },
+          "abortStatement": {
+            "messages": [
+              {
+                "content": "Sorry, I could not understand. Please start again.",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "description": "QNA Wage elicit response - 4.1.0 - v1"
+        }
+      },
+      "WageIntent": {
+        "Type": "Custom::LexIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAWageIntent-${AWS::StackName}"},
+          "createVersion": true,
+          "description": "Parse wage responses.",
+          "sampleUtterances": [
+            "My salary is {Wage}",
+            "My wage is {Wage}",
+            "{Wage}"
+          ],
+          "conclusionStatement": {
+            "messages": [{"content": "OK. ", "contentType": "PlainText"}]
+          },
+          "confirmationPrompt": {
+            "maxAttempts": 1,
+            "messages": [
+              {
+                "content": "Is {Wage} correct (Yes/No)?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "rejectionStatement": {
+            "messages": [
+              {
+                "content": "Please let me what your wage was again?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "fulfillmentActivity": {"type": "ReturnIntent"},
+          "slots": [
+            {
+              "name": "Wage",
+              "slotType": {"Ref": "WageSlotType"},
+              "slotTypeVersion": "QNABOT-AUTO-ASSIGNED",
+              "slotConstraint": "Required",
+              "valueElicitationPrompt": {
+                "messages": [
+                  {"contentType": "PlainText", "content": "What is your wage?"}
+                ],
+                "maxAttempts": 2
+              },
+              "priority": 1
+            }
+          ]
+        }
+      },
+      "WageAliasV2": {
+        "Type": "Custom::LexAlias",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "botName": {"Ref": "QNAWage"},
+          "name": "live",
+          "description": "QNA Wage Alias - 4.1.0 - v1"
+        }
+      },
+      "SocialSecuritySlotType": {
+        "Type": "Custom::LexSlotType",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNASocialSecuritySlotType-${AWS::StackName}"},
+          "createVersion": true,
+          "description": "QNA Social Security Slot Type - 4.1.0 - v1",
+          "parentSlotTypeSignature": "AMAZON.AlphaNumeric",
+          "slotTypeConfigurations": [
+            {"regexConfiguration": {"pattern": "[0-9]{3}-[0-9]{2}-[0-9]{4}"}}
+          ]
+        }
+      },
+      "QNASocialSecurity": {
+        "Type": "Custom::LexBot",
+        "DependsOn": "SocialSecurityIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNASocialSecurityBot-${AWS::StackName}"},
+          "locale": "en-US",
+          "voiceId": "Joanna",
+          "childDirected": false,
+          "createVersion": true,
+          "intents": [{"intentName": {"Ref": "SocialSecurityIntent"}}],
+          "clarificationPrompt": {
+            "messages": [
+              {
+                "contentType": "PlainText",
+                "content": "Please repeat your social security number."
+              }
+            ],
+            "maxAttempts": 3
+          },
+          "abortStatement": {
+            "messages": [
+              {
+                "content": "Sorry, I could not understand. Please start again.",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "description": "QNA Social Security elicit response - 4.1.0 - v1"
+        }
+      },
+      "SocialSecurityIntent": {
+        "Type": "Custom::LexIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNASocialSecurityIntent-${AWS::StackName}"},
+          "createVersion": true,
+          "description": "QNA Social Security Intent - 4.1.0 - v1",
+          "sampleUtterances": [
+            "The social security number is {SSN}",
+            "My social security number is {SSN}",
+            "It is {SSN}",
+            "{SSN}"
+          ],
+          "conclusionStatement": {
+            "messages": [{"content": "OK. ", "contentType": "PlainText"}]
+          },
+          "confirmationPrompt": {
+            "maxAttempts": 1,
+            "messages": [
+              {
+                "content": "Is {SSN} correct (Yes/No)?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "rejectionStatement": {
+            "messages": [
+              {
+                "content": "Please let me know the social security number again?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "fulfillmentActivity": {"type": "ReturnIntent"},
+          "slots": [
+            {
+              "name": "SSN",
+              "slotType": {"Ref": "SocialSecuritySlotType"},
+              "slotTypeVersion": "QNABOT-AUTO-ASSIGNED",
+              "slotConstraint": "Required",
+              "valueElicitationPrompt": {
+                "messages": [
+                  {
+                    "contentType": "PlainText",
+                    "content": "What is your social security number?"
+                  }
+                ],
+                "maxAttempts": 2
+              },
+              "priority": 1
+            }
+          ]
+        }
+      },
+      "SocialSecurityAliasV2": {
+        "Type": "Custom::LexAlias",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "botName": {"Ref": "QNASocialSecurity"},
+          "name": "live",
+          "description": "QNA Social Security Alias - 4.1.0 - v1"
+        }
+      },
+      "PinSlotType": {
+        "Type": "Custom::LexSlotType",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAPinSlotType-${AWS::StackName}"},
+          "description": "QNA Pin Slot Type - 4.1.0 - v1",
+          "parentSlotTypeSignature": "AMAZON.AlphaNumeric",
+          "createVersion": true,
+          "slotTypeConfigurations": [
+            {"regexConfiguration": {"pattern": "[0-9]{4}"}}
+          ]
+        }
+      },
+      "QNAPin": {
+        "Type": "Custom::LexBot",
+        "DependsOn": "PinIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAPinBot-${AWS::StackName}"},
+          "locale": "en-US",
+          "voiceId": "Joanna",
+          "childDirected": false,
+          "createVersion": true,
+          "intents": [{"intentName": {"Ref": "PinIntent"}}],
+          "clarificationPrompt": {
+            "messages": [
+              {
+                "contentType": "PlainText",
+                "content": "Please repeat your pin number."
+              }
+            ],
+            "maxAttempts": 3
+          },
+          "abortStatement": {
+            "messages": [
+              {
+                "content": "Sorry, I could not understand. Please start again.",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "description": "QNA Pin elicit response - 4.1.0 - v1"
+        }
+      },
+      "PinIntent": {
+        "Type": "Custom::LexIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAPinIntent-${AWS::StackName}"},
+          "description": "Parse pin responses.",
+          "createVersion": true,
+          "sampleUtterances": [
+            "The pin number is {Pin}",
+            "My pin number is {Pin}",
+            "It is {Pin}",
+            "{Pin}"
+          ],
+          "conclusionStatement": {
+            "messages": [{"content": "OK. ", "contentType": "PlainText"}]
+          },
+          "confirmationPrompt": {
+            "maxAttempts": 1,
+            "messages": [
+              {
+                "content": "Is {Pin} correct (Yes/No)?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "rejectionStatement": {
+            "messages": [
+              {
+                "content": "Please let me know the pin number again?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "fulfillmentActivity": {"type": "ReturnIntent"},
+          "slots": [
+            {
+              "name": "Pin",
+              "slotType": {"Ref": "PinSlotType"},
+              "slotTypeVersion": "QNABOT-AUTO-ASSIGNED",
+              "slotConstraint": "Required",
+              "valueElicitationPrompt": {
+                "messages": [
+                  {
+                    "contentType": "PlainText",
+                    "content": "What is your pin number?"
+                  }
+                ],
+                "maxAttempts": 2
+              },
+              "priority": 1
+            }
+          ]
+        }
+      },
+      "PinAliasV2": {
+        "Type": "Custom::LexAlias",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "botName": {"Ref": "QNAPin"},
+          "name": "live",
+          "description": "QNA Pin Alias - 4.1.0 - v1"
+        }
+      },
+      "YesNoSlotType": {
+        "Type": "Custom::LexSlotType",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAYesNoSlotType-${AWS::StackName}"},
+          "description": "QNA Yes No Slot Type - 4.1.0 - v1",
+          "createVersion": true,
+          "valueSelectionStrategy": "TOP_RESOLUTION",
+          "enumerationValues": [
+            {
+              "value": "Yes",
+              "synonyms": ["OK", "Yeah", "Sure", "Yep", "Affirmative", "aye"]
+            },
+            {"value": "No", "synonyms": ["Nope", "Na", "Negative", "Non"]}
+          ]
+        }
+      },
+      "YesNoIntent": {
+        "Type": "Custom::LexIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAYesNoIntent-${AWS::StackName}"},
+          "createVersion": true,
+          "description": "QNA Yes No Intent - 4.1.0 - v1",
+          "sampleUtterances": ["{Yes_No}", "I said {Yes_No}"],
+          "conclusionStatement": {
+            "messages": [{"content": "OK. ", "contentType": "PlainText"}]
+          },
+          "fulfillmentActivity": {"type": "ReturnIntent"},
+          "slots": [
+            {
+              "name": "Yes_No",
+              "slotType": {"Ref": "YesNoSlotType"},
+              "slotTypeVersion": "QNABOT-AUTO-ASSIGNED",
+              "slotConstraint": "Required",
+              "valueElicitationPrompt": {
+                "messages": [
+                  {"contentType": "PlainText", "content": "Say Yes or No."}
+                ],
+                "maxAttempts": 2
+              },
+              "priority": 1
+            }
+          ]
+        }
+      },
+      "QNAYesNo": {
+        "Type": "Custom::LexBot",
+        "DependsOn": ["YesNoSlotType", "YesNoIntent"],
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAYesNoBot-${AWS::StackName}"},
+          "description": "QNA Yes No Bot - 4.1.0 - v1",
+          "locale": "en-US",
+          "voiceId": "Joanna",
+          "childDirected": false,
+          "createVersion": true,
+          "intents": [{"intentName": {"Ref": "YesNoIntent"}}],
+          "clarificationPrompt": {
+            "messages": [
+              {
+                "contentType": "PlainText",
+                "content": "Please repeat - say Yes or No."
+              }
+            ],
+            "maxAttempts": 5
+          },
+          "abortStatement": {
+            "messages": [
+              {
+                "content": "Sorry, I could not understand. Please start again.",
+                "contentType": "PlainText"
+              }
+            ]
+          }
+        }
+      },
+      "YesNoAliasV2": {
+        "Type": "Custom::LexAlias",
+        "DependsOn": "QNAYesNo",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "botName": {"Ref": "QNAYesNo"},
+          "name": "live",
+          "description": "QNA Yes No Alias - 4.1.0 - v1"
+        }
+      },
+      "YesNoExitSlotType": {
+        "Type": "Custom::LexSlotType",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAYesNoExitSlotType-${AWS::StackName}"},
+          "description": "QNA Yes No Exit Slot Type - 4.1.0 - v1",
+          "createVersion": true,
+          "valueSelectionStrategy": "TOP_RESOLUTION",
+          "enumerationValues": [
+            {
+              "value": "Yes",
+              "synonyms": ["OK", "Yeah", "Sure", "Yep", "Affirmative", "aye"]
+            },
+            {"value": "No", "synonyms": ["Nope", "Na", "Negative", "Non"]},
+            {
+              "value": "Exit",
+              "synonyms": [
+                "agent",
+                "rep",
+                "representative",
+                "stop",
+                "quit",
+                "help",
+                "bye",
+                "goodbye"
+              ]
+            }
+          ]
+        }
+      },
+      "YesNoExitIntent": {
+        "Type": "Custom::LexIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAYesNoExitIntent-${AWS::StackName}"},
+          "createVersion": true,
+          "description": "QNA Yes No Exit Intent - 4.1.0 - v1",
+          "sampleUtterances": ["{Yes_No_Exit}", "I said {Yes_No_Exit}"],
+          "conclusionStatement": {
+            "messages": [{"content": "Got it. ", "contentType": "PlainText"}]
+          },
+          "fulfillmentActivity": {"type": "ReturnIntent"},
+          "slots": [
+            {
+              "name": "Yes_No_Exit",
+              "slotType": {"Ref": "YesNoExitSlotType"},
+              "slotTypeVersion": "QNABOT-AUTO-ASSIGNED",
+              "slotConstraint": "Required",
+              "valueElicitationPrompt": {
+                "messages": [
+                  {"contentType": "PlainText", "content": "Say Yes, No, or Exit."}
+                ],
+                "maxAttempts": 2
+              },
+              "priority": 1
+            }
+          ]
+        }
+      },
+      "QNAYesNoExit": {
+        "Type": "Custom::LexBot",
+        "DependsOn": ["YesNoExitSlotType", "YesNoExitIntent"],
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAYesNoExitBot-${AWS::StackName}"},
+          "description": "QNA Yes No Exit Bot - 4.1.0 - v1",
+          "locale": "en-US",
+          "voiceId": "Joanna",
+          "childDirected": false,
+          "createVersion": true,
+          "intents": [{"intentName": {"Ref": "YesNoExitIntent"}}],
+          "clarificationPrompt": {
+            "messages": [
+              {
+                "contentType": "PlainText",
+                "content": "Please repeat - say Yes or No. You can also say exit, agent, quit, or bye to leave."
+              }
+            ],
+            "maxAttempts": 5
+          },
+          "abortStatement": {
+            "messages": [
+              {
+                "content": "Sorry, I could not understand. Please start again.",
+                "contentType": "PlainText"
+              }
+            ]
+          }
+        }
+      },
+      "YesNoExitAliasV2": {
+        "Type": "Custom::LexAlias",
+        "DependsOn": "QNAYesNoExit",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "botName": {"Ref": "QNAYesNoExit"},
+          "name": "live",
+          "description": "QNA Yes No Exit Alias - 4.1.0 - v1"
+        }
+      },
+      "DateIntent": {
+        "Type": "Custom::LexIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNADateIntent-${AWS::StackName}"},
+          "createVersion": true,
+          "description": "QNA DateIntent - 4.1.0 - v1",
+          "sampleUtterances": [
+            "The date is {date}",
+            "The date was {date}",
+            "I went on {date}",
+            "It is {date}",
+            "It occurred on {date}",
+            "I was born on {date}",
+            "My birthdate is {date}",
+            "My date of birth is {date}",
+            "{date}"
+          ],
+          "conclusionStatement": {
+            "messages": [{"content": "OK. ", "contentType": "PlainText"}]
+          },
+          "confirmationPrompt": {
+            "maxAttempts": 1,
+            "messages": [
+              {
+                "content": "Is {date} correct (Yes or No)?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "rejectionStatement": {
+            "messages": [
+              {
+                "content": "Please let me know the date again?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "fulfillmentActivity": {"type": "ReturnIntent"},
+          "slots": [
+            {
+              "name": "date",
+              "slotType": "AMAZON.DATE",
+              "slotConstraint": "Required",
+              "valueElicitationPrompt": {
+                "messages": [
+                  {"contentType": "PlainText", "content": "What date?"}
+                ],
+                "maxAttempts": 2
+              },
+              "priority": 1
+            }
+          ]
+        }
+      },
+      "QNADate": {
+        "Type": "Custom::LexBot",
+        "DependsOn": "DateIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNADateBot-${AWS::StackName}"},
+          "description": "QNA Date Bot - 4.1.0 - v1",
+          "locale": "en-US",
+          "voiceId": "Joanna",
+          "childDirected": false,
+          "createVersion": true,
+          "intents": [{"intentName": {"Ref": "DateIntent"}}],
+          "clarificationPrompt": {
+            "messages": [
+              {"contentType": "PlainText", "content": "Please repeat the date."}
+            ],
+            "maxAttempts": 3
+          },
+          "abortStatement": {
+            "messages": [
+              {
+                "content": "Sorry, I could not understand. Please start again.",
+                "contentType": "PlainText"
+              }
+            ]
+          }
+        }
+      },
+      "DateAliasV2": {
+        "Type": "Custom::LexAlias",
+        "DependsOn": "QNADate",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "botName": {"Ref": "QNADate"},
+          "name": "live",
+          "description": "QNA Date Alias - 4.1.0 - v1"
+        }
+      },
+      "DayOfWeekIntent": {
+        "Type": "Custom::LexIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNADayOfWeekIntent-${AWS::StackName}"},
+          "description": "QNA Day Of Week Intent - 4.1.0 - v1",
+          "createVersion": true,
+          "sampleUtterances": [
+            "The day is {DayOfWeek}",
+            "The day was {DayOfWeek}",
+            "I went on {DayOfWeek}",
+            "It is {DayOfWeek}",
+            "It occurred on {DayOfWeek}",
+            "{DayOfWeek}"
+          ],
+          "conclusionStatement": {
+            "messages": [{"content": "OK. ", "contentType": "PlainText"}]
+          },
+          "confirmationPrompt": {
+            "maxAttempts": 1,
+            "messages": [
+              {
+                "content": "Is {DayOfWeek} correct (Yes or No)?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "rejectionStatement": {
+            "messages": [
+              {
+                "content": "Please let me know the day again?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "fulfillmentActivity": {"type": "ReturnIntent"},
+          "slots": [
+            {
+              "name": "DayOfWeek",
+              "slotType": "AMAZON.DayOfWeek",
+              "slotConstraint": "Required",
+              "valueElicitationPrompt": {
+                "messages": [
+                  {"contentType": "PlainText", "content": "What day?"}
+                ],
+                "maxAttempts": 2
+              },
+              "priority": 1
+            }
+          ]
+        }
+      },
+      "QNADayOfWeek": {
+        "Type": "Custom::LexBot",
+        "DependsOn": "DayOfWeekIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNADayOfWeekBot-${AWS::StackName}"},
+          "locale": "en-US",
+          "voiceId": "Joanna",
+          "childDirected": false,
+          "createVersion": true,
+          "intents": [{"intentName": {"Ref": "DayOfWeekIntent"}}],
+          "clarificationPrompt": {
+            "messages": [
+              {
+                "contentType": "PlainText",
+                "content": "Please repeat the day of the week."
+              }
+            ],
+            "maxAttempts": 3
+          },
+          "abortStatement": {
+            "messages": [
+              {
+                "content": "Sorry, I could not understand. Please start again.",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "description": "QNADayOfWeek bot - 4.1.0 - v1"
+        }
+      },
+      "DayOfWeekAliasV2": {
+        "Type": "Custom::LexAlias",
+        "DependsOn": "QNADayOfWeek",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "botName": {"Ref": "QNADayOfWeek"},
+          "name": "live",
+          "description": "QNA Day Of Week Alias - 4.1.0 - v1"
+        }
+      },
+      "MonthIntent": {
+        "Type": "Custom::LexIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAMonthIntent-${AWS::StackName}"},
+          "description": "QNA Month Intent - 4.1.0 - v1",
+          "createVersion": true,
+          "sampleUtterances": [
+            "The month is {Month}",
+            "The month was {Month}",
+            "It is {Month}",
+            "It occurred on {Month}",
+            "{Month}"
+          ],
+          "conclusionStatement": {
+            "messages": [{"content": "OK. ", "contentType": "PlainText"}]
+          },
+          "confirmationPrompt": {
+            "maxAttempts": 1,
+            "messages": [
+              {
+                "content": "Is {Month} correct (Yes or No)?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "rejectionStatement": {
+            "messages": [
+              {
+                "content": "Please let me know the month again?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "fulfillmentActivity": {"type": "ReturnIntent"},
+          "slots": [
+            {
+              "name": "Month",
+              "slotType": "AMAZON.Month",
+              "slotConstraint": "Required",
+              "valueElicitationPrompt": {
+                "messages": [
+                  {"contentType": "PlainText", "content": "What month?"}
+                ],
+                "maxAttempts": 2
+              },
+              "priority": 1
+            }
+          ]
+        }
+      },
+      "QNAMonth": {
+        "Type": "Custom::LexBot",
+        "DependsOn": "MonthIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAMonthBot-${AWS::StackName}"},
+          "locale": "en-US",
+          "voiceId": "Joanna",
+          "childDirected": false,
+          "createVersion": true,
+          "intents": [{"intentName": {"Ref": "MonthIntent"}}],
+          "clarificationPrompt": {
+            "messages": [
+              {"contentType": "PlainText", "content": "Please repeat the month."}
+            ],
+            "maxAttempts": 3
+          },
+          "abortStatement": {
+            "messages": [
+              {
+                "content": "Sorry, I could not understand. Please start again.",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "description": "QNA Month Bot - 4.1.0 - v1"
+        }
+      },
+      "MonthAliasV2": {
+        "Type": "Custom::LexAlias",
+        "DependsOn": "QNAMonth",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "botName": {"Ref": "QNAMonth"},
+          "name": "live",
+          "description": "QNA Month Alias - 4.1.0 - v1"
+        }
+      },
+      "NumberIntent": {
+        "Type": "Custom::LexIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNANumberIntent-${AWS::StackName}"},
+          "description": "QNA Number Intent - 4.1.0 - v1",
+          "createVersion": true,
+          "sampleUtterances": [
+            "The number is {Number}",
+            "The number was {Number}",
+            "It is {Number}",
+            "{Number}"
+          ],
+          "conclusionStatement": {
+            "messages": [{"content": "OK. ", "contentType": "PlainText"}]
+          },
+          "confirmationPrompt": {
+            "maxAttempts": 1,
+            "messages": [
+              {
+                "content": "Is {Number} correct (Yes or No)?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "rejectionStatement": {
+            "messages": [
+              {
+                "content": "Please let me know the number again?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "fulfillmentActivity": {"type": "ReturnIntent"},
+          "slots": [
+            {
+              "name": "Number",
+              "slotType": "AMAZON.NUMBER",
+              "slotConstraint": "Required",
+              "valueElicitationPrompt": {
+                "messages": [
+                  {"contentType": "PlainText", "content": "What number?"}
+                ],
+                "maxAttempts": 2
+              },
+              "priority": 1
+            }
+          ]
+        }
+      },
+      "QNANumber": {
+        "Type": "Custom::LexBot",
+        "DependsOn": "NumberIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNANumberBot-${AWS::StackName}"},
+          "locale": "en-US",
+          "voiceId": "Joanna",
+          "childDirected": false,
+          "createVersion": true,
+          "intents": [{"intentName": {"Ref": "NumberIntent"}}],
+          "clarificationPrompt": {
+            "messages": [
+              {"contentType": "PlainText", "content": "Please repeat the number."}
+            ],
+            "maxAttempts": 3
+          },
+          "abortStatement": {
+            "messages": [
+              {
+                "content": "Sorry, I could not understand. Please start again.",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "description": "QNA Number Bot - 4.1.0 - v1"
+        }
+      },
+      "NumberAliasV2": {
+        "Type": "Custom::LexAlias",
+        "DependsOn": "QNANumber",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "botName": {"Ref": "QNANumber"},
+          "name": "live",
+          "description": "QNA Number Alias - 4.1.0 - v1"
+        }
+      },
+      "AgeIntent": {
+        "Type": "Custom::LexIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAAgeIntent-${AWS::StackName}"},
+          "description": "QNA Age Intent - 4.1.0 - v1",
+          "createVersion": true,
+          "sampleUtterances": [
+            "My age is {Age}",
+            "Age is {Age}",
+            "It is {Age}",
+            "I am {Age}",
+            "I am {Age} years old",
+            "His age is {Age}",
+            "He is {Age}",
+            "He is {Age} years old",
+            "Her age is {Age}",
+            "She is {Age}",
+            "She is {Age} years old",
+            "{Age}"
+          ],
+          "conclusionStatement": {
+            "messages": [{"content": "OK. ", "contentType": "PlainText"}]
+          },
+          "confirmationPrompt": {
+            "maxAttempts": 1,
+            "messages": [
+              {
+                "content": "Is {Age} correct (Yes or No)?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "rejectionStatement": {
+            "messages": [
+              {
+                "content": "Please let me know the age again?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "fulfillmentActivity": {"type": "ReturnIntent"},
+          "slots": [
+            {
+              "name": "Age",
+              "slotType": "AMAZON.NUMBER",
+              "slotConstraint": "Required",
+              "valueElicitationPrompt": {
+                "messages": [
+                  {"contentType": "PlainText", "content": "What age?"}
+                ],
+                "maxAttempts": 2
+              },
+              "priority": 1
+            }
+          ]
+        }
+      },
+      "QNAAge": {
+        "Type": "Custom::LexBot",
+        "DependsOn": "AgeIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAAgeBot-${AWS::StackName}"},
+          "description": "QNA Age Bot - 4.1.0 - v1",
+          "locale": "en-US",
+          "voiceId": "Joanna",
+          "childDirected": false,
+          "createVersion": true,
+          "intents": [{"intentName": {"Ref": "AgeIntent"}}],
+          "clarificationPrompt": {
+            "messages": [
+              {"contentType": "PlainText", "content": "Please repeat the age."}
+            ],
+            "maxAttempts": 3
+          },
+          "abortStatement": {
+            "messages": [
+              {
+                "content": "Sorry, I could not understand. Please start again.",
+                "contentType": "PlainText"
+              }
+            ]
+          }
+        }
+      },
+      "AgeAliasV2": {
+        "Type": "Custom::LexAlias",
+        "DependsOn": "QNAAge",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "botName": {"Ref": "QNAAge"},
+          "name": "live",
+          "description": "QNA Age Alias - 4.1.0 - v1"
+        }
+      },
+      "PhoneNumberIntent": {
+        "Type": "Custom::LexIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAPhoneNumberIntent-${AWS::StackName}"},
+          "description": "QNA Phone Number Intent - 4.1.0 - v1",
+          "createVersion": true,
+          "sampleUtterances": [
+            "The phone number is {PhoneNumber}",
+            "My phone number is {PhoneNumber}",
+            "It is {PhoneNumber}",
+            "{PhoneNumber}"
+          ],
+          "conclusionStatement": {
+            "messages": [{"content": "OK. ", "contentType": "PlainText"}]
+          },
+          "confirmationPrompt": {
+            "maxAttempts": 1,
+            "messages": [
+              {
+                "content": "<speak>Is <say-as interpret-as=\"telephone\">{PhoneNumber}</say-as> correct (Yes or No)?</speak>",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "rejectionStatement": {
+            "messages": [
+              {
+                "content": "Please let me know the phone number again?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "fulfillmentActivity": {"type": "ReturnIntent"},
+          "slots": [
+            {
+              "name": "PhoneNumber",
+              "slotType": "AMAZON.PhoneNumber",
+              "slotConstraint": "Required",
+              "valueElicitationPrompt": {
+                "messages": [
+                  {"contentType": "PlainText", "content": "What phone number?"}
+                ],
+                "maxAttempts": 2
+              },
+              "priority": 1
+            }
+          ]
+        }
+      },
+      "QNAPhoneNumber": {
+        "Type": "Custom::LexBot",
+        "DependsOn": "PhoneNumberIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAPhoneNumberBot-${AWS::StackName}"},
+          "description": "QNA Phone Number Bot - 4.1.0 - v1",
+          "locale": "en-US",
+          "voiceId": "Joanna",
+          "childDirected": false,
+          "createVersion": true,
+          "intents": [{"intentName": {"Ref": "PhoneNumberIntent"}}],
+          "clarificationPrompt": {
+            "messages": [
+              {
+                "contentType": "PlainText",
+                "content": "Please repeat the phone number."
+              }
+            ],
+            "maxAttempts": 3
+          },
+          "abortStatement": {
+            "messages": [
+              {
+                "content": "Sorry, I could not understand. Please start again.",
+                "contentType": "PlainText"
+              }
+            ]
+          }
+        }
+      },
+      "PhoneNumberAliasV2": {
+        "Type": "Custom::LexAlias",
+        "DependsOn": "QNAPhoneNumber",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "botName": {"Ref": "QNAPhoneNumber"},
+          "name": "live",
+          "description": "QNA Phone Number Alias - 4.1.0 - v1"
+        }
+      },
+      "TimeIntent": {
+        "Type": "Custom::LexIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNATimeIntent-${AWS::StackName}"},
+          "description": "QNA Time Intent - 4.1.0 - v1",
+          "createVersion": true,
+          "sampleUtterances": [
+            "The time was {Time}",
+            "It occurred at {Time}",
+            "At {Time}",
+            "{Time}"
+          ],
+          "conclusionStatement": {
+            "messages": [{"content": "OK. ", "contentType": "PlainText"}]
+          },
+          "confirmationPrompt": {
+            "maxAttempts": 1,
+            "messages": [
+              {
+                "content": "Is {Time} correct (Yes or No)?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "rejectionStatement": {
+            "messages": [
+              {
+                "content": "Please let me know the time again?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "fulfillmentActivity": {"type": "ReturnIntent"},
+          "slots": [
+            {
+              "name": "Time",
+              "slotType": "AMAZON.TIME",
+              "slotConstraint": "Required",
+              "valueElicitationPrompt": {
+                "messages": [
+                  {"contentType": "PlainText", "content": "What time?"}
+                ],
+                "maxAttempts": 2
+              },
+              "priority": 1
+            }
+          ]
+        }
+      },
+      "QNATime": {
+        "Type": "Custom::LexBot",
+        "DependsOn": "TimeIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNATimeBot-${AWS::StackName}"},
+          "description": "QNA Time Bot - 4.1.0 - v1",
+          "locale": "en-US",
+          "voiceId": "Joanna",
+          "childDirected": false,
+          "createVersion": true,
+          "intents": [{"intentName": {"Ref": "TimeIntent"}}],
+          "clarificationPrompt": {
+            "messages": [
+              {
+                "contentType": "PlainText",
+                "content": "Please repeat the time, specifying am or pm."
+              }
+            ],
+            "maxAttempts": 3
+          },
+          "abortStatement": {
+            "messages": [
+              {
+                "content": "Sorry, I could not understand. Please start again.",
+                "contentType": "PlainText"
+              }
+            ]
+          }
+        }
+      },
+      "TimeAliasV2": {
+        "Type": "Custom::LexAlias",
+        "DependsOn": "QNATime",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "botName": {"Ref": "QNATime"},
+          "name": "live",
+          "description": "QNA Time Alias - 4.1.0 - v1"
+        }
+      },
+      "EmailAddressIntent": {
+        "Type": "Custom::LexIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAEmailAddressIntent-${AWS::StackName}"},
+          "description": "QNA Email Address Intent - 4.1.0 - v1",
+          "createVersion": true,
+          "sampleUtterances": [
+            "My email address is {EmailAddress}",
+            "The email address is {EmailAddress}",
+            "{EmailAddress}"
+          ],
+          "conclusionStatement": {
+            "messages": [{"content": "OK. ", "contentType": "PlainText"}]
+          },
+          "confirmationPrompt": {
+            "maxAttempts": 1,
+            "messages": [
+              {
+                "content": "Is {EmailAddress} correct (Yes or No)?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "rejectionStatement": {
+            "messages": [
+              {
+                "content": "Please let me know the email address again?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "fulfillmentActivity": {"type": "ReturnIntent"},
+          "slots": [
+            {
+              "name": "EmailAddress",
+              "slotType": "AMAZON.EmailAddress",
+              "slotConstraint": "Required",
+              "valueElicitationPrompt": {
+                "messages": [
+                  {"contentType": "PlainText", "content": "What email address?"}
+                ],
+                "maxAttempts": 2
+              },
+              "priority": 1
+            }
+          ]
+        }
+      },
+      "QNAEmailAddress": {
+        "Type": "Custom::LexBot",
+        "DependsOn": "EmailAddressIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNAEmailAddressBot-${AWS::StackName}"},
+          "description": "QNA Email Address Intent - 4.1.0 - v1",
+          "locale": "en-US",
+          "voiceId": "Joanna",
+          "childDirected": false,
+          "createVersion": true,
+          "intents": [{"intentName": {"Ref": "EmailAddressIntent"}}],
+          "clarificationPrompt": {
+            "messages": [
+              {
+                "contentType": "PlainText",
+                "content": "Please repeat the email address."
+              }
+            ],
+            "maxAttempts": 3
+          },
+          "abortStatement": {
+            "messages": [
+              {
+                "content": "Sorry, I could not understand. Please start again.",
+                "contentType": "PlainText"
+              }
+            ]
+          }
+        }
+      },
+      "EmailAddressAliasV2": {
+        "Type": "Custom::LexAlias",
+        "DependsOn": "QNAEmailAddress",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "botName": {"Ref": "QNAEmailAddress"},
+          "name": "live",
+          "description": "QNA Email Address Alias - 4.1.0 - v1"
+        }
+      },
+      "NameIntent": {
+        "Type": "Custom::LexIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNANameIntent-${AWS::StackName}"},
+          "description": "Parse name responses.",
+          "createVersion": true,
+          "sampleUtterances": [
+            "My last name is {LastName}",
+            "My first name is {FirstName}",
+            "My first name is {FirstName} and My last name is {LastName}",
+            "My name is {FirstName} {LastName}",
+            "I am {FirstName} {LastName}",
+            "{FirstName} {LastName}",
+            "{FirstName}",
+            "{LastName}"
+          ],
+          "conclusionStatement": {
+            "messages": [{"content": "OK. ", "contentType": "PlainText"}]
+          },
+          "confirmationPrompt": {
+            "maxAttempts": 1,
+            "messages": [
+              {
+                "content": "Did I get your name right (Yes or No) {FirstName} {LastName}?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "rejectionStatement": {
+            "messages": [
+              {
+                "content": "Please let me know your name again?",
+                "contentType": "PlainText"
+              }
+            ]
+          },
+          "fulfillmentActivity": {"type": "ReturnIntent"},
+          "slots": [
+            {
+              "name": "FirstName",
+              "slotType": "AMAZON.US_FIRST_NAME",
+              "slotConstraint": "Required",
+              "valueElicitationPrompt": {
+                "messages": [
+                  {
+                    "contentType": "PlainText",
+                    "content": "What is your first name?"
+                  }
+                ],
+                "maxAttempts": 2
+              },
+              "priority": 1
+            },
+            {
+              "name": "LastName",
+              "slotType": "AMAZON.US_LAST_NAME",
+              "slotConstraint": "Required",
+              "valueElicitationPrompt": {
+                "messages": [
+                  {
+                    "contentType": "PlainText",
+                    "content": "What is your last name?"
+                  }
+                ],
+                "maxAttempts": 2
+              },
+              "priority": 1
+            }
+          ]
+        }
+      },
+      "QNAName": {
+        "Type": "Custom::LexBot",
+        "DependsOn": "NameIntent",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "name": {"Fn::Sub": "QNANameBot-${AWS::StackName}"},
+          "description": "QNA Name Bot - 4.1.0 - v1",
+          "locale": "en-US",
+          "voiceId": "Joanna",
+          "childDirected": false,
+          "createVersion": true,
+          "intents": [{"intentName": {"Ref": "NameIntent"}}],
+          "clarificationPrompt": {
+            "messages": [
+              {
+                "contentType": "PlainText",
+                "content": "Please repeat your first and last name?"
+              }
+            ],
+            "maxAttempts": 3
+          },
+          "abortStatement": {
+            "messages": [
+              {
+                "content": "Sorry, I could not understand. Please start again.",
+                "contentType": "PlainText"
+              }
+            ]
+          }
+        }
+      },
+      "NameAliasV2": {
+        "Type": "Custom::LexAlias",
+        "DependsOn": "QNAName",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "botName": {"Ref": "QNAName"},
+          "name": "live",
+          "description": "QNA Name Alias - 4.1.0 - v1"
+        }
+      },
+      "ExampleJSLambdaQuiz": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": {"Ref": "BootstrapBucket"},
+            "S3Key": {
+              "Fn::Join": [
+                "",
+                [{"Ref": "BootstrapPrefix"}, "/lambda/examples.zip"]
+              ]
+            },
+            "S3ObjectVersion": {"Ref": "ExampleCodeVersion"}
+          },
+          "Environment": {
+            "Variables": {
+              "ES_QNA_TYPE": {"Ref": "QnAType"},
+              "ES_QUIZE_TYPE": {"Ref": "QuizType"},
+              "ES_INDEX": {"Ref": "Index"},
+              "FIREHOSE_NAME": {"Ref": "FeedbackFirehoseName"},
+              "ES_ADDRESS": {"Ref": "ESAddress"},
+              "QUIZ_KMS_KEY": {"Ref": "QuizKey"},
+              "CFSTACK": {"Ref": "AWS::StackName"}
+            }
+          },
+          "Handler": "js/Quiz.handler",
+          "MemorySize": "128",
+          "Role": {"Fn::GetAtt": ["ExampleLambdaRole", "Arn"]},
+          "Runtime": "nodejs10.x",
+          "Timeout": 300,
+          "Tags": [{"Key": "Type", "Value": "Example"}]
+        }
+      },
+      "ExampleJSLambdahook": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": {"Ref": "BootstrapBucket"},
+            "S3Key": {
+              "Fn::Join": [
+                "",
+                [{"Ref": "BootstrapPrefix"}, "/lambda/examples.zip"]
+              ]
+            },
+            "S3ObjectVersion": {"Ref": "ExampleCodeVersion"}
+          },
+          "Environment": {
+            "Variables": {
+              "ES_QNA_TYPE": {"Ref": "QnAType"},
+              "ES_QUIZE_TYPE": {"Ref": "QuizType"},
+              "ES_INDEX": {"Ref": "Index"},
+              "FIREHOSE_NAME": {"Ref": "FeedbackFirehoseName"},
+              "ES_ADDRESS": {"Ref": "ESAddress"},
+              "QUIZ_KMS_KEY": {"Ref": "QuizKey"},
+              "CFSTACK": {"Ref": "AWS::StackName"}
+            }
+          },
+          "Handler": "js/hook.handler",
+          "MemorySize": "128",
+          "Role": {"Fn::GetAtt": ["ExampleLambdaRole", "Arn"]},
+          "Runtime": "nodejs10.x",
+          "Timeout": 300,
+          "Tags": [{"Key": "Type", "Value": "Example"}]
+        }
+      },
+      "ExamplePYTHONLambdaBotBroker": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": {"Ref": "BootstrapBucket"},
+            "S3Key": {
+              "Fn::Join": [
+                "",
+                [{"Ref": "BootstrapPrefix"}, "/lambda/examples.zip"]
+              ]
+            },
+            "S3ObjectVersion": {"Ref": "ExampleCodeVersion"}
+          },
+          "Environment": {
+            "Variables": {
+              "ES_QNA_TYPE": {"Ref": "QnAType"},
+              "ES_QUIZE_TYPE": {"Ref": "QuizType"},
+              "ES_INDEX": {"Ref": "Index"},
+              "FIREHOSE_NAME": {"Ref": "FeedbackFirehoseName"},
+              "ES_ADDRESS": {"Ref": "ESAddress"},
+              "QUIZ_KMS_KEY": {"Ref": "QuizKey"},
+              "SNS_TOPIC_ARN": {"Ref": "FeedbackSNS"},
+              "CFSTACK": {"Ref": "AWS::StackName"}
+            }
+          },
+          "Handler": "py/BotBroker.handler",
+          "MemorySize": "128",
+          "Role": {"Fn::GetAtt": ["ExampleLambdaRole", "Arn"]},
+          "Runtime": "python3.6",
+          "Timeout": 300,
+          "Tags": [{"Key": "Type", "Value": "Example"}]
+        }
+      },
+      "ExamplePYTHONLambdaConnectCallback": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": {"Ref": "BootstrapBucket"},
+            "S3Key": {
+              "Fn::Join": [
+                "",
+                [{"Ref": "BootstrapPrefix"}, "/lambda/examples.zip"]
+              ]
+            },
+            "S3ObjectVersion": {"Ref": "ExampleCodeVersion"}
+          },
+          "Environment": {
+            "Variables": {
+              "ES_QNA_TYPE": {"Ref": "QnAType"},
+              "ES_QUIZE_TYPE": {"Ref": "QuizType"},
+              "ES_INDEX": {"Ref": "Index"},
+              "FIREHOSE_NAME": {"Ref": "FeedbackFirehoseName"},
+              "ES_ADDRESS": {"Ref": "ESAddress"},
+              "QUIZ_KMS_KEY": {"Ref": "QuizKey"},
+              "SNS_TOPIC_ARN": {"Ref": "FeedbackSNS"},
+              "CFSTACK": {"Ref": "AWS::StackName"}
+            }
+          },
+          "Handler": "py/ConnectCallback.handler",
+          "MemorySize": "128",
+          "Role": {"Fn::GetAtt": ["ExampleLambdaRole", "Arn"]},
+          "Runtime": "python3.6",
+          "Timeout": 300,
+          "Tags": [{"Key": "Type", "Value": "Example"}]
+        }
+      },
+      "ExamplePYTHONLambdaFeedback": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": {"Ref": "BootstrapBucket"},
+            "S3Key": {
+              "Fn::Join": [
+                "",
+                [{"Ref": "BootstrapPrefix"}, "/lambda/examples.zip"]
+              ]
+            },
+            "S3ObjectVersion": {"Ref": "ExampleCodeVersion"}
+          },
+          "Environment": {
+            "Variables": {
+              "ES_QNA_TYPE": {"Ref": "QnAType"},
+              "ES_QUIZE_TYPE": {"Ref": "QuizType"},
+              "ES_INDEX": {"Ref": "Index"},
+              "FIREHOSE_NAME": {"Ref": "FeedbackFirehoseName"},
+              "ES_ADDRESS": {"Ref": "ESAddress"},
+              "QUIZ_KMS_KEY": {"Ref": "QuizKey"},
+              "SNS_TOPIC_ARN": {"Ref": "FeedbackSNS"},
+              "CFSTACK": {"Ref": "AWS::StackName"}
+            }
+          },
+          "Handler": "py/Feedback.handler",
+          "MemorySize": "128",
+          "Role": {"Fn::GetAtt": ["ExampleLambdaRole", "Arn"]},
+          "Runtime": "python3.6",
+          "Timeout": 300,
+          "Tags": [{"Key": "Type", "Value": "Example"}]
+        }
+      },
+      "ExamplePYTHONLambdaNext": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": {"Ref": "BootstrapBucket"},
+            "S3Key": {
+              "Fn::Join": [
+                "",
+                [{"Ref": "BootstrapPrefix"}, "/lambda/examples.zip"]
+              ]
+            },
+            "S3ObjectVersion": {"Ref": "ExampleCodeVersion"}
+          },
+          "Environment": {
+            "Variables": {
+              "ES_QNA_TYPE": {"Ref": "QnAType"},
+              "ES_QUIZE_TYPE": {"Ref": "QuizType"},
+              "ES_INDEX": {"Ref": "Index"},
+              "FIREHOSE_NAME": {"Ref": "FeedbackFirehoseName"},
+              "ES_ADDRESS": {"Ref": "ESAddress"},
+              "QUIZ_KMS_KEY": {"Ref": "QuizKey"},
+              "SNS_TOPIC_ARN": {"Ref": "FeedbackSNS"},
+              "CFSTACK": {"Ref": "AWS::StackName"}
+            }
+          },
+          "Handler": "py/Next.handler",
+          "MemorySize": "128",
+          "Role": {"Fn::GetAtt": ["ExampleLambdaRole", "Arn"]},
+          "Runtime": "python3.6",
+          "Timeout": 300,
+          "Tags": [{"Key": "Type", "Value": "Example"}]
+        }
+      },
+      "ExamplePYTHONLambdaPrevious": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": {"Ref": "BootstrapBucket"},
+            "S3Key": {
+              "Fn::Join": [
+                "",
+                [{"Ref": "BootstrapPrefix"}, "/lambda/examples.zip"]
+              ]
+            },
+            "S3ObjectVersion": {"Ref": "ExampleCodeVersion"}
+          },
+          "Environment": {
+            "Variables": {
+              "ES_QNA_TYPE": {"Ref": "QnAType"},
+              "ES_QUIZE_TYPE": {"Ref": "QuizType"},
+              "ES_INDEX": {"Ref": "Index"},
+              "FIREHOSE_NAME": {"Ref": "FeedbackFirehoseName"},
+              "ES_ADDRESS": {"Ref": "ESAddress"},
+              "QUIZ_KMS_KEY": {"Ref": "QuizKey"},
+              "SNS_TOPIC_ARN": {"Ref": "FeedbackSNS"},
+              "CFSTACK": {"Ref": "AWS::StackName"}
+            }
+          },
+          "Handler": "py/Previous.handler",
+          "MemorySize": "128",
+          "Role": {"Fn::GetAtt": ["ExampleLambdaRole", "Arn"]},
+          "Runtime": "python3.6",
+          "Timeout": 300,
+          "Tags": [{"Key": "Type", "Value": "Example"}]
+        }
+      },
+      "ExamplePYTHONLambdahello": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": {"Ref": "BootstrapBucket"},
+            "S3Key": {
+              "Fn::Join": [
+                "",
+                [{"Ref": "BootstrapPrefix"}, "/lambda/examples.zip"]
+              ]
+            },
+            "S3ObjectVersion": {"Ref": "ExampleCodeVersion"}
+          },
+          "Environment": {
+            "Variables": {
+              "ES_QNA_TYPE": {"Ref": "QnAType"},
+              "ES_QUIZE_TYPE": {"Ref": "QuizType"},
+              "ES_INDEX": {"Ref": "Index"},
+              "FIREHOSE_NAME": {"Ref": "FeedbackFirehoseName"},
+              "ES_ADDRESS": {"Ref": "ESAddress"},
+              "QUIZ_KMS_KEY": {"Ref": "QuizKey"},
+              "SNS_TOPIC_ARN": {"Ref": "FeedbackSNS"},
+              "CFSTACK": {"Ref": "AWS::StackName"}
+            }
+          },
+          "Handler": "py/hello.handler",
+          "MemorySize": "128",
+          "Role": {"Fn::GetAtt": ["ExampleLambdaRole", "Arn"]},
+          "Runtime": "python3.6",
+          "Timeout": 300,
+          "Tags": [{"Key": "Type", "Value": "Example"}]
+        }
+      },
+      "FeedbackSNS": {"Type": "AWS::SNS::Topic"},
+      "feedbacksnspolicy": {
+        "Type": "AWS::SNS::TopicPolicy",
+        "Properties": {
+          "PolicyDocument": {
+            "Id": "MysnsTopicPolicy",
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "My-statement-id",
+                "Effect": "Allow",
+                "Principal": {"AWS": {"Fn::Sub": "${AWS::AccountId}"}},
+                "Action": [
+                  "SNS:GetTopicAttributes",
+                  "SNS:SetTopicAttributes",
+                  "SNS:AddPermission",
+                  "SNS:RemovePermission",
+                  "SNS:DeleteTopic",
+                  "SNS:Subscribe",
+                  "SNS:ListSubscriptionsByTopic",
+                  "SNS:Publish",
+                  "SNS:Receive"
+                ],
+                "Resource": "*"
+              }
+            ]
+          },
+          "Topics": [{"Ref": "FeedbackSNS"}]
+        }
+      },
+      "InvokePolicy": {
+        "Type": "AWS::IAM::ManagedPolicy",
+        "Properties": {
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": ["lambda:InvokeFunction"],
+                "Resource": [
+                  {"Fn::GetAtt": ["ExampleJSLambdaQuiz", "Arn"]},
+                  {"Fn::GetAtt": ["ExampleJSLambdahook", "Arn"]},
+                  {"Fn::GetAtt": ["ExamplePYTHONLambdaBotBroker", "Arn"]},
+                  {"Fn::GetAtt": ["ExamplePYTHONLambdaConnectCallback", "Arn"]},
+                  {"Fn::GetAtt": ["ExamplePYTHONLambdaFeedback", "Arn"]},
+                  {"Fn::GetAtt": ["ExamplePYTHONLambdaNext", "Arn"]},
+                  {"Fn::GetAtt": ["ExamplePYTHONLambdaPrevious", "Arn"]},
+                  {"Fn::GetAtt": ["ExamplePYTHONLambdahello", "Arn"]}
+                ]
+              }
+            ]
+          },
+          "Roles": [{"Ref": "FulfillmentLambdaRole"}]
+        }
+      },
+      "QuizKey": {
+        "Type": "AWS::KMS::Key",
+        "Properties": {
+          "KeyPolicy": {
+            "Version": "2012-10-17",
+            "Id": "key-default-1",
+            "Statement": [
+              {
+                "Sid": "Allow administration of the key",
+                "Effect": "Allow",
+                "Principal": {"AWS": {"Ref": "AWS::AccountId"}},
+                "Action": ["kms:*"],
+                "Resource": "*"
+              },
+              {
+                "Sid": "Enable IAM User Permissions",
+                "Effect": "Allow",
+                "Principal": {
+                  "AWS": {"Fn::Sub": "arn:aws:iam::${AWS::AccountId}:root"}
+                },
+                "Action": "kms:*",
+                "Resource": "*"
+              }
+            ]
+          }
+        }
+      },
+      "LambdaHookExamples": {
+        "Type": "Custom::QnABotExamples",
+        "Properties": {
+          "QuizJS": {"Ref": "ExampleJSLambdaQuiz"},
+          "hookJS": {"Ref": "ExampleJSLambdahook"},
+          "BotBrokerPY": {"Ref": "ExamplePYTHONLambdaBotBroker"},
+          "ConnectCallbackPY": {"Ref": "ExamplePYTHONLambdaConnectCallback"},
+          "FeedbackPY": {"Ref": "ExamplePYTHONLambdaFeedback"},
+          "NextPY": {"Ref": "ExamplePYTHONLambdaNext"},
+          "PreviousPY": {"Ref": "ExamplePYTHONLambdaPrevious"},
+          "helloPY": {"Ref": "ExamplePYTHONLambdahello"},
+          "ServiceToken": {"Fn::GetAtt": ["ExampleWriteLambda", "Arn"]},
+          "photos": {"Fn::Sub": "${ApiUrlName}/examples/photos"},
+          "Bucket": {"Ref": "AssetBucket"},
+          "version": {"Ref": "ExampleCodeVersion"}
+        }
+      },
+      "ExampleCodeVersion": {
+        "Type": "Custom::S3Version",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "Bucket": {"Ref": "BootstrapBucket"},
+          "Key": {"Fn::Sub": "${BootstrapPrefix}/lambda/examples.zip"},
+          "BuildDate": "2020-07-20T00:24:35.661Z"
+        }
+      },
+      "ExampleWriteLambda": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": {"Ref": "BootstrapBucket"},
+            "S3Key": {
+              "Fn::Join": [
+                "",
+                [{"Ref": "BootstrapPrefix"}, "/lambda/examples.zip"]
+              ]
+            },
+            "S3ObjectVersion": {"Ref": "ExampleCodeVersion"}
+          },
+          "Handler": "cfn.handler",
+          "MemorySize": "128",
+          "Role": {"Ref": "CFNLambdaRole"},
+          "Runtime": "nodejs10.x",
+          "Timeout": 300,
+          "Tags": [{"Key": "Type", "Value": "CustomResource"}]
+        }
+      },
+      "ExampleLambdaRole": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": {"Service": "lambda.amazonaws.com"},
+                "Action": "sts:AssumeRole"
+              }
+            ]
+          },
+          "Path": "/",
+          "Policies": [
+            {
+              "PolicyName": "LambdaFeedbackFirehoseQNALambda",
+              "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": ["kms:Encrypt", "kms:Decrypt"],
+                    "Resource": {"Fn::GetAtt": ["QuizKey", "Arn"]}
+                  },
+                  {
+                    "Effect": "Allow",
+                    "Action": ["lambda:InvokeFunction"],
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:aws:lambda:",
+                            {"Ref": "AWS::Region"},
+                            ":",
+                            {"Ref": "AWS::AccountId"},
+                            ":function:qna-*"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:aws:lambda:",
+                            {"Ref": "AWS::Region"},
+                            ":",
+                            {"Ref": "AWS::AccountId"},
+                            ":function:QNA-*"
+                          ]
+                        ]
+                      },
+                      {"Ref": "QIDLambdaArn"}
+                    ]
+                  },
+                  {
+                    "Effect": "Allow",
+                    "Action": ["firehose:PutRecord", "firehose:PutRecordBatch"],
+                    "Resource": [{"Ref": "FeedbackFirehose"}]
+                  }
+                ]
+              }
+            },
+            {
+              "PolicyName": "SNSQNALambda",
+              "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": ["sns:Publish"],
+                    "Resource": {"Ref": "FeedbackSNS"}
+                  }
+                ]
+              }
+            },
+            {
+              "PolicyName": "LexQNALambda",
+              "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": ["lex:PostText"],
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:aws:lex:",
+                            {"Ref": "AWS::Region"},
+                            ":",
+                            {"Ref": "AWS::AccountId"},
+                            ":bot:*",
+                            ":qna*"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:aws:lex:",
+                            {"Ref": "AWS::Region"},
+                            ":",
+                            {"Ref": "AWS::AccountId"},
+                            ":bot:*",
+                            ":QNA*"
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "PolicyName": "LambdaQnABotStdExecution",
+              "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": ["lambda:InvokeFunction"],
+                    "Resource": [
+                      "arn:aws:lambda:*:*:function:qna-*",
+                      "arn:aws:lambda:*:*:function:QNA-*",
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:aws:lambda:*:*:function:",
+                            {
+                              "Fn::Select": [
+                                "0",
+                                {"Fn::Split": ["-", {"Ref": "AWS::StackName"}]}
+                              ]
+                            },
+                            "-*"
+                          ]
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "Effect": "Allow",
+                    "Action": ["cloudformation:DescribeStacks"],
+                    "Resource": [{"Ref": "AWS::StackId"}]
+                  }
+                ]
+              }
+            },
+            {
+              "PolicyName": "KendraFeedback",
+              "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": ["kendra:SubmitFeedback"],
+                    "Resource": "*"
+                  }
+                ]
+              }
+            }
+          ],
+          "ManagedPolicyArns": [
+            "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+            "arn:aws:iam::aws:policy/AmazonKendraReadOnlyAccess"
+          ]
+        }
+      },
+      "EXTCustomJSHook": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": {"Ref": "BootstrapBucket"},
+            "S3Key": {
+              "Fn::Join": [
+                "",
+                [{"Ref": "BootstrapPrefix"}, "/lambda/EXTCustomJSHook.zip"]
+              ]
+            },
+            "S3ObjectVersion": {"Ref": "CodeVersionCustomJSHook"}
+          },
+          "Environment": {
+            "Variables": {
+              "ES_QNA_TYPE": {"Ref": "QnAType"},
+              "ES_QUIZE_TYPE": {"Ref": "QuizType"},
+              "ES_INDEX": {"Ref": "Index"},
+              "FIREHOSE_NAME": {"Ref": "FeedbackFirehoseName"},
+              "ES_ADDRESS": {"Ref": "ESAddress"},
+              "QUIZ_KMS_KEY": {"Ref": "QuizKey"}
+            }
+          },
+          "Handler": "CustomJSHook.handler",
+          "MemorySize": "2048",
+          "Role": {"Fn::GetAtt": ["ExtensionLambdaRole", "Arn"]},
+          "Runtime": "nodejs10.x",
+          "Timeout": 300,
+          "Tags": [{"Key": "Type", "Value": "LambdaHook"}]
+        }
+      },
+      "EXTKendraFallback": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": {"Ref": "BootstrapBucket"},
+            "S3Key": {
+              "Fn::Join": [
+                "",
+                [{"Ref": "BootstrapPrefix"}, "/lambda/EXTKendraFallback.zip"]
+              ]
+            },
+            "S3ObjectVersion": {"Ref": "CodeVersionKendraFallback"}
+          },
+          "Environment": {
+            "Variables": {
+              "ES_QNA_TYPE": {"Ref": "QnAType"},
+              "ES_QUIZE_TYPE": {"Ref": "QuizType"},
+              "ES_INDEX": {"Ref": "Index"},
+              "FIREHOSE_NAME": {"Ref": "FeedbackFirehoseName"},
+              "ES_ADDRESS": {"Ref": "ESAddress"},
+              "QUIZ_KMS_KEY": {"Ref": "QuizKey"}
+            }
+          },
+          "Handler": "KendraFallback.handler",
+          "MemorySize": "2048",
+          "Role": {"Fn::GetAtt": ["ExtensionLambdaRole", "Arn"]},
+          "Runtime": "nodejs10.x",
+          "Timeout": 300,
+          "Tags": [{"Key": "Type", "Value": "LambdaHook"}]
+        }
+      },
+      "EXTCustomPYHook": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": {"Ref": "BootstrapBucket"},
+            "S3Key": {
+              "Fn::Join": [
+                "",
+                [{"Ref": "BootstrapPrefix"}, "/lambda/EXTCustomPYHook.zip"]
+              ]
+            },
+            "S3ObjectVersion": {"Ref": "CodeVersionCustomPYHook"}
+          },
+          "Environment": {
+            "Variables": {
+              "ES_QNA_TYPE": {"Ref": "QnAType"},
+              "ES_QUIZE_TYPE": {"Ref": "QuizType"},
+              "ES_INDEX": {"Ref": "Index"},
+              "FIREHOSE_NAME": {"Ref": "FeedbackFirehoseName"},
+              "ES_ADDRESS": {"Ref": "ESAddress"},
+              "QUIZ_KMS_KEY": {"Ref": "QuizKey"},
+              "PYTHONPATH": "/var/task/py_modules:/var/runtime:/opt/python"
+            }
+          },
+          "Handler": "CustomPYHook.handler",
+          "MemorySize": "2048",
+          "Role": {"Fn::GetAtt": ["ExtensionLambdaRole", "Arn"]},
+          "Runtime": "python3.6",
+          "Timeout": 300,
+          "Tags": [{"Key": "Type", "Value": "LambdaHook"}]
+        }
+      },
+      "CodeVersionCustomJSHook": {
+        "Type": "Custom::S3Version",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "Bucket": {"Ref": "BootstrapBucket"},
+          "Key": {"Fn::Sub": "${BootstrapPrefix}/lambda/EXTCustomJSHook.zip"},
+          "BuildDate": "2020-07-20T00:24:35.662Z"
+        }
+      },
+      "CodeVersionKendraFallback": {
+        "Type": "Custom::S3Version",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "Bucket": {"Ref": "BootstrapBucket"},
+          "Key": {"Fn::Sub": "${BootstrapPrefix}/lambda/EXTKendraFallback.zip"},
+          "BuildDate": "2020-07-20T00:24:35.662Z"
+        }
+      },
+      "CodeVersionCustomPYHook": {
+        "Type": "Custom::S3Version",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "Bucket": {"Ref": "BootstrapBucket"},
+          "Key": {"Fn::Sub": "${BootstrapPrefix}/lambda/EXTCustomPYHook.zip"},
+          "BuildDate": "2020-07-20T00:24:35.662Z"
+        }
+      },
+      "EXTUiImport": {
+        "Type": "Custom::ExtensionsUiImport",
+        "Properties": {
+          "CustomJSHookJS": {"Ref": "EXTCustomJSHook"},
+          "KendraFallbackJS": {"Ref": "EXTKendraFallback"},
+          "CustomPYHookPY": {"Ref": "EXTCustomPYHook"},
+          "ServiceToken": {"Fn::GetAtt": ["EXTUiImportLambda", "Arn"]},
+          "photos": {"Fn::Sub": "${ApiUrlName}/examples/photos"},
+          "Bucket": {"Ref": "AssetBucket"},
+          "version": {"Ref": "EXTUiImportVersion"}
+        }
+      },
+      "EXTUiImportLambda": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": {"Ref": "BootstrapBucket"},
+            "S3Key": {
+              "Fn::Join": [
+                "",
+                [{"Ref": "BootstrapPrefix"}, "/lambda/EXTUiImports.zip"]
+              ]
+            },
+            "S3ObjectVersion": {"Ref": "EXTUiImportVersion"}
+          },
+          "Handler": "ui_import.handler",
+          "MemorySize": "128",
+          "Role": {"Ref": "CFNLambdaRole"},
+          "Runtime": "nodejs10.x",
+          "Timeout": 300,
+          "Tags": [{"Key": "Type", "Value": "CustomResource"}]
+        }
+      },
+      "EXTUiImportVersion": {
+        "Type": "Custom::S3Version",
+        "Properties": {
+          "ServiceToken": {"Ref": "CFNLambda"},
+          "Bucket": {"Ref": "BootstrapBucket"},
+          "Key": {"Fn::Sub": "${BootstrapPrefix}/lambda/EXTUiImports.zip"},
+          "BuildDate": "2020-07-20T00:24:35.663Z"
+        }
+      },
+      "ExtensionsInvokePolicy": {
+        "Type": "AWS::IAM::ManagedPolicy",
+        "Properties": {
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": ["lambda:InvokeFunction"],
+                "Resource": [
+                  {"Fn::GetAtt": ["EXTCustomJSHook", "Arn"]},
+                  {"Fn::GetAtt": ["EXTKendraFallback", "Arn"]},
+                  {"Fn::GetAtt": ["EXTCustomPYHook", "Arn"]}
+                ]
+              }
+            ]
+          },
+          "Roles": [{"Ref": "FulfillmentLambdaRole"}]
+        }
+      },
+      "ExtensionLambdaRole": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": {"Service": "lambda.amazonaws.com"},
+                "Action": "sts:AssumeRole"
+              }
+            ]
+          },
+          "Path": "/",
+          "Policies": [
+            {
+              "PolicyName": "LambdaFeedbackFirehoseQNALambda",
+              "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": ["kms:Encrypt", "kms:Decrypt"],
+                    "Resource": {"Fn::GetAtt": ["QuizKey", "Arn"]}
+                  },
+                  {
+                    "Effect": "Allow",
+                    "Action": ["lambda:InvokeFunction"],
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:aws:lambda:",
+                            {"Ref": "AWS::Region"},
+                            ":",
+                            {"Ref": "AWS::AccountId"},
+                            ":function:qna-*"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:aws:lambda:",
+                            {"Ref": "AWS::Region"},
+                            ":",
+                            {"Ref": "AWS::AccountId"},
+                            ":function:QNA-*"
+                          ]
+                        ]
+                      },
+                      {"Ref": "QIDLambdaArn"}
+                    ]
+                  },
+                  {
+                    "Effect": "Allow",
+                    "Action": ["firehose:PutRecord", "firehose:PutRecordBatch"],
+                    "Resource": [{"Ref": "FeedbackFirehose"}]
+                  }
+                ]
+              }
+            },
+            {
+              "PolicyName": "LexQNALambda",
+              "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": ["lex:PostText"],
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:aws:lex:",
+                            {"Ref": "AWS::Region"},
+                            ":",
+                            {"Ref": "AWS::AccountId"},
+                            ":bot:*",
+                            ":qna*"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:aws:lex:",
+                            {"Ref": "AWS::Region"},
+                            ":",
+                            {"Ref": "AWS::AccountId"},
+                            ":bot:*",
+                            ":QNA*"
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "ManagedPolicyArns": [
+            "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+            "arn:aws:iam::aws:policy/AmazonKendraReadOnlyAccess"
+          ]
+        }
+      }
+    },
+    "Conditions": {},
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "QnABot nested example resources",
+    "Mappings": {},
+    "Outputs": {
+      "ExampleJSLambdaQuiz": {
+        "Value": {"Fn::GetAtt": ["ExampleJSLambdaQuiz", "Arn"]}
+      },
+      "ExampleJSLambdahook": {
+        "Value": {"Fn::GetAtt": ["ExampleJSLambdahook", "Arn"]}
+      },
+      "ExamplePYTHONLambdaBotBroker": {
+        "Value": {"Fn::GetAtt": ["ExamplePYTHONLambdaBotBroker", "Arn"]}
+      },
+      "ExamplePYTHONLambdaConnectCallback": {
+        "Value": {"Fn::GetAtt": ["ExamplePYTHONLambdaConnectCallback", "Arn"]}
+      },
+      "ExamplePYTHONLambdaFeedback": {
+        "Value": {"Fn::GetAtt": ["ExamplePYTHONLambdaFeedback", "Arn"]}
+      },
+      "ExamplePYTHONLambdaNext": {
+        "Value": {"Fn::GetAtt": ["ExamplePYTHONLambdaNext", "Arn"]}
+      },
+      "ExamplePYTHONLambdaPrevious": {
+        "Value": {"Fn::GetAtt": ["ExamplePYTHONLambdaPrevious", "Arn"]}
+      },
+      "ExamplePYTHONLambdahello": {
+        "Value": {"Fn::GetAtt": ["ExamplePYTHONLambdahello", "Arn"]}
+      },
+      "EXTCustomJSHook": {"Value": {"Fn::GetAtt": ["EXTCustomJSHook", "Arn"]}},
+      "EXTKendraFallback": {
+        "Value": {"Fn::GetAtt": ["EXTKendraFallback", "Arn"]}
+      },
+      "EXTCustomPYHook": {"Value": {"Fn::GetAtt": ["EXTCustomPYHook", "Arn"]}},
+      "QNAYesNo": {"Value": {"Ref": "QNAYesNo"}},
+      "QNAYesNoExit": {"Value": {"Ref": "QNAYesNoExit"}},
+      "QNADate": {"Value": {"Ref": "QNADate"}},
+      "QNADayOfWeek": {"Value": {"Ref": "QNADayOfWeek"}},
+      "QNAMonth": {"Value": {"Ref": "QNAMonth"}},
+      "QNANumber": {"Value": {"Ref": "QNANumber"}},
+      "QNAAge": {"Value": {"Ref": "QNAAge"}},
+      "QNAPhoneNumber": {"Value": {"Ref": "QNAPhoneNumber"}},
+      "QNATime": {"Value": {"Ref": "QNATime"}},
+      "QNAEmailAddress": {"Value": {"Ref": "QNAEmailAddress"}},
+      "QNAName": {"Value": {"Ref": "QNAName"}},
+      "QNAWage": {"Value": {"Ref": "QNAWage"}},
+      "QNASocialSecurity": {"Value": {"Ref": "QNASocialSecurity"}},
+      "QNAPin": {"Value": {"Ref": "QNAPin"}}
+    },
+    "Parameters": {
+      "FulfillmentLambdaRole": {"Type": "String"},
+      "QnAType": {"Type": "String"},
+      "QuizType": {"Type": "String"},
+      "Index": {"Type": "String"},
+      "ESAddress": {"Type": "String"},
+      "BootstrapBucket": {"Type": "String"},
+      "BootstrapPrefix": {"Type": "String"},
+      "FeedbackFirehose": {"Type": "String"},
+      "FeedbackFirehoseName": {"Type": "String"},
+      "CFNLambda": {"Type": "String"},
+      "CFNLambdaRole": {"Type": "String"},
+      "ApiUrlName": {"Type": "String"},
+      "AssetBucket": {"Type": "String"},
+      "QIDLambdaArn": {"Type": "String"}
+    }
+  }
